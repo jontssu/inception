@@ -1,0 +1,57 @@
+volumes:
+  wordpress:
+    driver: local
+    driver_opts:
+      type: 'none'
+      o:    'bind'
+      # device: /Users/jole/data/wordpress
+      device: ~/data/wordpress
+  mariadb:
+    driver: local
+    driver_opts:
+      type: 'none'
+      o:    'bind'
+      # device: /Users/jole/data/mariadb
+      device: ~/data/mariadb
+
+
+networks:
+  inception:
+    driver: bridge
+      
+services:
+  nginx:
+    container_name: nginx
+    build: requirements/nginx/
+    networks:
+      - inception
+    volumes:
+      - wordpress:/var/www/wordpress
+    env_file: .env
+    ports:
+      - "443:443"
+    restart: unless-stopped
+
+  wordpress:
+    container_name: wordpress
+    build: requirements/wordpress/
+    networks:
+      - inception
+    volumes:
+      - wordpress:/var/www/wordpress
+    env_file: .env
+    expose:
+      - "9000"
+    restart: unless-stopped
+
+  mariadb:
+    container_name: mariadb
+    build: requirements/mariadb/
+    networks:
+      - inception
+    volumes:
+      - mariadb:/var/lib/mysql
+    env_file: .env
+    expose:
+      - "3306"
+    restart: unless-stopped
