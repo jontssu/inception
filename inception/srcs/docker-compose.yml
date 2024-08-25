@@ -1,0 +1,64 @@
+version: '3'
+
+services:
+  nginx:
+    image: nginx:jole
+    container_name: nginx
+    build:
+      context: ./requirements/nginx
+    ports:
+      - "443:443"
+    env_file: .env
+    depends_on:
+      - wordpress
+    networks:
+      - inception
+    volumes:
+      - wordpress_data:/var/www/html
+    restart: always
+
+  wordpress:
+    image: wordpress:jole
+    container_name: wordpress
+    build:
+      context: ./requirements/wordpress
+    env_file: .env
+    depends_on:
+      - mariadb
+    networks:
+      - inception
+    volumes:
+      - wordpress_data:/var/www/html
+    restart: always
+
+  mariadb:
+    image: mariadb:jole
+    container_name: mariadb
+    build:
+      context: ./requirements/mariadb
+    env_file: .env
+    networks:
+      - inception
+    volumes:
+      - mariadb_data:/var/www/mysql
+    restart: always
+
+networks:
+  inception:
+    name: inception
+
+volumes:
+  mariadb_data:
+    name: mariadb_data
+    driver: local
+    driver_opts:
+      type: none
+      device: ${MARIADB_VOLUME}
+      o: bind
+  wordpress_data:
+    name: wordpress_data
+    driver: local
+    driver_opts:
+      type: none
+      device: ${WORDPRESS_VOLUME}
+      o: bind
